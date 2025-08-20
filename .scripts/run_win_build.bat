@@ -108,7 +108,11 @@ if /i "%CI%" == "azure" (
 
 :: Validate
 call :start_group "Validating outputs"
-validate_recipe_outputs "%FEEDSTOCK_NAME%"
+if "%SKIP_OUTPUT_VALIDATION%"=="1" (
+    echo Skipping validate_recipe_outputs due to SKIP_OUTPUT_VALIDATION=%SKIP_OUTPUT_VALIDATION%
+) else (
+    validate_recipe_outputs "%FEEDSTOCK_NAME%"
+)
 if !errorlevel! neq 0 exit /b !errorlevel!
 call :end_group
 

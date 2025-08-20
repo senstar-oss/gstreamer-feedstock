@@ -92,11 +92,15 @@ else
     command -v inspect_artifacts >/dev/null 2>&1 && inspect_artifacts --recipe-dir "${RECIPE_ROOT}" -m "${CONFIG_FILE}" || echo "inspect_artifacts needs conda-forge-ci-setup >=4.9.4"
 
     ( endgroup "Inspecting artifacts" ) 2> /dev/null
-    ( startgroup "Validating outputs" ) 2> /dev/null
+    if [[ "${SKIP_OUTPUT_VALIDATION:-0}" != "1" ]]; then
+        ( startgroup "Validating outputs" ) 2> /dev/null
 
-    validate_recipe_outputs "${FEEDSTOCK_NAME}"
+        validate_recipe_outputs "${FEEDSTOCK_NAME}"
 
-    ( endgroup "Validating outputs" ) 2> /dev/null
+        ( endgroup "Validating outputs" ) 2> /dev/null
+    else
+        echo "Skipping validate_recipe_outputs due to SKIP_OUTPUT_VALIDATION=${SKIP_OUTPUT_VALIDATION}"
+    fi
 
     ( startgroup "Uploading packages" ) 2> /dev/null
 

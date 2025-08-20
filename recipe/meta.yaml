@@ -16,6 +16,9 @@ source:
     folder: plugins_good
     patches:
       - jpeg-win.patch  # [win]
+  - url: https://gstreamer.freedesktop.org/src/gst-rtsp-server/gst-rtsp-server-{{ version }}.tar.xz
+    sha256: 415e8a53a9844789770dd4f116ac2e3a4a33de42673c57acc25c5ba0f4406fc5
+    folder: rtsp_server
 
 build:
   number: 1
@@ -248,6 +251,50 @@ outputs:
         dressed up in tests.  If you're looking for a role model to
         base your own plug-in on here it is.
       doc_source_url: https://github.com/GStreamer/gst-plugins-good/tree/master/docs
+      license: LGPL-2.0-or-later
+      license_file: COPYING
+
+  - name: gst-rtsp-server
+    script: install_rtsp_server.sh  # [unix]
+    build:
+      activate_in_script: true
+      skip: true  # [not linux]
+      ignore_run_exports:
+        - python      # [build_platform != target_platform]
+        - python_abi  # [build_platform != target_platform]
+      run_exports:
+        - {{ pin_subpackage('gst-rtsp-server', max_pin='x.x') }}
+    requirements:
+      build:
+        - {{ compiler('c') }}
+        - {{ stdlib('c') }}
+        - {{ compiler('cxx') }}
+        - pkg-config
+        - meson
+        - ninja
+        - gettext-tools
+        - gobject-introspection
+        - cross-python_{{ target_platform }} 3.10    # [build_platform != target_platform]
+      host:
+        - python 3.10  # [build_platform != target_platform]
+        - {{ pin_subpackage('gstreamer', exact=True) }}
+        - {{ pin_subpackage('gst-plugins-base', exact=True) }}
+        - glib
+        - zlib
+        - openssl
+      run:
+        - {{ pin_subpackage('gstreamer', exact=True) }}
+        - {{ pin_subpackage('gst-plugins-base', exact=True) }}
+    test:
+      commands:
+        - test -f $PREFIX/lib/libgstrtspserver-1.0${SHLIB_EXT}  # [linux]
+        - test -f $PREFIX/lib/girepository-1.0/GstRtspServer-1.0.typelib  # [linux]
+    about:
+      summary: GStreamer RTSP Server library
+      description: |
+        gst-rtsp-server is a library on top of GStreamer for building an RTSP
+        server with GStreamer pipelines.
+      doc_source_url: https://gitlab.freedesktop.org/gstreamer/gst-rtsp-server
       license: LGPL-2.0-or-later
       license_file: COPYING
 
