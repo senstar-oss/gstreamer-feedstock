@@ -18,6 +18,9 @@ def setup_environment(ns):
     os.environ["CONFIG"] = ns.config
     os.environ["UPLOAD_PACKAGES"] = "False"
     os.environ["IS_PR_BUILD"] = "True"
+    # Skip feedstock token validation so locally-added outputs (e.g. gst-plugins-ugly)
+    # can build without conda-forge output authorization.
+    os.environ.setdefault("SKIP_OUTPUT_VALIDATION", "1")
     if ns.debug:
         os.environ["BUILD_WITH_CONDA_DEBUG"] = "1"
         if ns.output_id:

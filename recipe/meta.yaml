@@ -16,6 +16,9 @@ source:
     folder: plugins_good
     patches:
       - jpeg-win.patch  # [win]
+  - url: https://gstreamer.freedesktop.org/src/gst-plugins-ugly/gst-plugins-ugly-{{ version }}.tar.xz
+    sha256: 417f5ee895f734ac0341b3719c175fff16b4c8eae8806e29e170b3bcb3d9dba5
+    folder: plugins_ugly
   - url: https://gstreamer.freedesktop.org/src/gst-rtsp-server/gst-rtsp-server-{{ version }}.tar.xz
     sha256: 415e8a53a9844789770dd4f116ac2e3a4a33de42673c57acc25c5ba0f4406fc5
     folder: rtsp_server
@@ -295,6 +298,102 @@ outputs:
         gst-rtsp-server is a library on top of GStreamer for building an RTSP
         server with GStreamer pipelines.
       doc_source_url: https://gitlab.freedesktop.org/gstreamer/gst-rtsp-server
+      license: LGPL-2.0-or-later
+      license_file: COPYING
+
+  - name: gst-plugins-ugly-lgpl
+    script: install_ugly_plugins_lgpl.sh  # [linux]
+    build:
+      activate_in_script: true
+      skip: true  # [not linux]
+      ignore_run_exports:
+        - python      # [build_platform != target_platform]
+        - python_abi  # [build_platform != target_platform]
+      run_exports:
+        - {{ pin_subpackage('gst-plugins-ugly-lgpl', max_pin='x.x') }}
+
+    requirements:
+      build:
+        - {{ compiler('c') }}
+        - {{ stdlib('c') }}
+        - {{ compiler('cxx') }}
+        - pkg-config
+        - meson
+        - ninja
+        - gettext-tools
+        - gobject-introspection
+        - cross-python_{{ target_platform }} 3.10    # [build_platform != target_platform]
+      host:
+        - python 3.10  # [build_platform != target_platform]
+        - {{ pin_subpackage('gstreamer', exact=True) }}
+        - {{ pin_subpackage('gst-plugins-base', exact=True) }}
+        - glib
+        - zlib
+        - libintl-devel  # [not linux]
+      run:
+        - {{ pin_subpackage('gstreamer', exact=True) }}
+        - {{ pin_subpackage('gst-plugins-base', exact=True) }}
+
+    test:
+      commands:
+        - gst-inspect-1.0 --plugin asf  # [linux]
+        - gst-inspect-1.0 --plugin dvdlpcmdec  # [linux]
+        - gst-inspect-1.0 --plugin dvdsub  # [linux]
+        - gst-inspect-1.0 --plugin realmedia  # [linux]
+
+    about:
+      summary: GStreamer Ugly Plug-ins (LGPL subset)
+      description: |
+        LGPL-licensed and patent-friendlier modules from the GStreamer Ugly plug-in collection.
+      doc_source_url: https://gitlab.freedesktop.org/gstreamer/gst-plugins-ugly
+      license: LGPL-2.0-or-later
+      license_file: COPYING
+
+  - name: gst-plugins-ugly-gpl
+    script: install_ugly_plugins_gpl.sh  # [linux]
+    build:
+      activate_in_script: true
+      skip: true  # [not linux]
+      ignore_run_exports:
+        - python      # [build_platform != target_platform]
+        - python_abi  # [build_platform != target_platform]
+      run_exports:
+        - {{ pin_subpackage('gst-plugins-ugly-gpl', max_pin='x.x') }}
+
+    requirements:
+      build:
+        - {{ compiler('c') }}
+        - {{ stdlib('c') }}
+        - {{ compiler('cxx') }}
+        - pkg-config
+        - meson
+        - ninja
+        - gettext-tools
+        - gobject-introspection
+        - cross-python_{{ target_platform }} 3.10    # [build_platform != target_platform]
+      host:
+        - python 3.10  # [build_platform != target_platform]
+        - {{ pin_subpackage('gstreamer', exact=True) }}
+        - {{ pin_subpackage('gst-plugins-base', exact=True) }}
+        - glib
+        - zlib
+        - libintl-devel  # [not linux]
+        - x264  # [linux]
+      run:
+        - {{ pin_subpackage('gstreamer', exact=True) }}
+        - {{ pin_subpackage('gst-plugins-base', exact=True) }}
+        - x264  # [linux]
+
+    test:
+      commands:
+        - test -f $PREFIX/lib/gstreamer-1.0/libgstx264${SHLIB_EXT}  # [linux]
+        - gst-inspect-1.0 --plugin x264  # [linux]
+
+    about:
+      summary: GStreamer Ugly Plug-ins (GPL extras)
+      description: |
+        GPL-licensed additions from the GStreamer Ugly plug-in collection that rely on GPL code such as x264.
+      doc_source_url: https://gitlab.freedesktop.org/gstreamer/gst-plugins-ugly
       license: LGPL-2.0-or-later
       license_file: COPYING
 
