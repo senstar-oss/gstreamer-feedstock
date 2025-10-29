@@ -53,7 +53,7 @@ jobs:
         run: |
           # Find all conda packages in the build output
           mkdir -p ./built_packages
-          find ./miniforge3/conda-bld -name "*.tar.bz2" -o -name "*.conda" | while read pkg; do
+          find ./build_artifacts -name "*.tar.bz2" -o -name "*.conda" 2>/dev/null | while read pkg; do
             cp "$pkg" ./built_packages/ || true
           done
           ls -lh ./built_packages/ || echo "No packages found"
@@ -104,7 +104,7 @@ jobs:
         run: |
           # Find all conda packages in the build output
           mkdir -p ./built_packages
-          find ./miniforge3/conda-bld -name "*.tar.bz2" -o -name "*.conda" | while read pkg; do
+          find ./build_artifacts -name "*.tar.bz2" -o -name "*.conda" 2>/dev/null | while read pkg; do
             cp "$pkg" ./built_packages/ || true
           done
           ls -lh ./built_packages/ || echo "No packages found"
@@ -149,7 +149,7 @@ jobs:
         run: |
           # Find all conda packages in the build output
           New-Item -ItemType Directory -Force -Path ./built_packages
-          Get-ChildItem -Path ./miniforge3/conda-bld -Recurse -Include *.tar.bz2,*.conda -ErrorAction SilentlyContinue | ForEach-Object {
+          Get-ChildItem -Path ./build_artifacts -Recurse -Include *.tar.bz2,*.conda -ErrorAction SilentlyContinue | ForEach-Object {
             Copy-Item $_.FullName -Destination ./built_packages/ -ErrorAction SilentlyContinue
           }
           Get-ChildItem ./built_packages/ -ErrorAction SilentlyContinue

@@ -28,3 +28,4 @@
 /output
 # Pixi's configuration
 .pixi
+.github/logs/
