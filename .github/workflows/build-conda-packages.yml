@@ -1,0 +1,220 @@
+name: Build Conda Packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Platform to build for'
+        required: true
+        type: choice
+        options:
+          - linux_64
+          - linux_aarch64
+          - linux_ppc64le
+          - osx_64
+          - osx_arm64
+          - win_64
+          - all
+
+jobs:
+  build-linux:
+    if: inputs.platform == 'linux_64' || inputs.platform == 'linux_aarch64' || inputs.platform == 'linux_ppc64le' || inputs.platform == 'all'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        config: >-
+          ${{
+            inputs.platform == 'all' && fromJson('["linux_64_", "linux_aarch64_", "linux_ppc64le_"]') ||
+            inputs.platform == 'linux_64' && fromJson('["linux_64_"]') ||
+            inputs.platform == 'linux_aarch64' && fromJson('["linux_aarch64_"]') ||
+            inputs.platform == 'linux_ppc64le' && fromJson('["linux_ppc64le_"]') ||
+            fromJson('["linux_64_"]')
+          }}
+      fail-fast: false
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up QEMU (for cross-platform builds)
+        if: matrix.config == 'linux_aarch64_' || matrix.config == 'linux_ppc64le_'
+        uses: docker/setup-qemu-action@v3
+      
+      - name: Build conda package (Linux)
+        run: |
+          export CONFIG=${{ matrix.config }}
+          export UPLOAD_PACKAGES=False
+          export IS_PR_BUILD=True
+          export SKIP_OUTPUT_VALIDATION=1
+          bash .scripts/run_docker_build.sh
+      
+      - name: Find built packages
+        id: find-packages
+        run: |
+          # Find all conda packages in the build output
+          mkdir -p ./built_packages
+          find ./miniforge3/conda-bld -name "*.tar.bz2" -o -name "*.conda" | while read pkg; do
+            cp "$pkg" ./built_packages/ || true
+          done
+          ls -lh ./built_packages/ || echo "No packages found"
+      
+      - name: Upload conda packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: conda-packages-${{ matrix.config }}
+          path: ./built_packages/*
+          if-no-files-found: warn
+          retention-days: 30
+
+  build-osx:
+    if: inputs.platform == 'osx_64' || inputs.platform == 'osx_arm64' || inputs.platform == 'all'
+    runs-on: macos-13
+    strategy:
+      matrix:
+        config: >-
+          ${{
+            inputs.platform == 'all' && fromJson('["osx_64_", "osx_arm64_"]') ||
+            inputs.platform == 'osx_64' && fromJson('["osx_64_"]') ||
+            inputs.platform == 'osx_arm64' && fromJson('["osx_arm64_"]') ||
+            fromJson('["osx_64_"]')
+          }}
+      fail-fast: false
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup OSX SDK
+        run: |
+          # Download and setup OSX SDK
+          mkdir -p "$PWD/SDKs"
+          export OSX_SDK_DIR="$PWD/SDKs"
+          echo "OSX_SDK_DIR=$OSX_SDK_DIR" >> $GITHUB_ENV
+      
+      - name: Build conda package (macOS)
+        run: |
+          export CONFIG=${{ matrix.config }}
+          export UPLOAD_PACKAGES=False
+          export IS_PR_BUILD=True
+          export SKIP_OUTPUT_VALIDATION=1
+          bash .scripts/run_osx_build.sh
+      
+      - name: Find built packages
+        id: find-packages
+        run: |
+          # Find all conda packages in the build output
+          mkdir -p ./built_packages
+          find ./miniforge3/conda-bld -name "*.tar.bz2" -o -name "*.conda" | while read pkg; do
+            cp "$pkg" ./built_packages/ || true
+          done
+          ls -lh ./built_packages/ || echo "No packages found"
+      
+      - name: Upload conda packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: conda-packages-${{ matrix.config }}
+          path: ./built_packages/*
+          if-no-files-found: warn
+          retention-days: 30
+
+  build-windows:
+    if: inputs.platform == 'win_64' || inputs.platform == 'all'
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        config: >-
+          ${{
+            inputs.platform == 'all' && fromJson('["win_64_"]') ||
+            inputs.platform == 'win_64' && fromJson('["win_64_"]') ||
+            fromJson('["win_64_"]')
+          }}
+      fail-fast: false
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Build conda package (Windows)
+        shell: cmd
+        run: |
+          set CONFIG=${{ matrix.config }}
+          set UPLOAD_PACKAGES=False
+          set IS_PR_BUILD=True
+          set SKIP_OUTPUT_VALIDATION=1
+          call .scripts\run_win_build.bat
+      
+      - name: Find built packages
+        shell: pwsh
+        id: find-packages
+        run: |
+          # Find all conda packages in the build output
+          New-Item -ItemType Directory -Force -Path ./built_packages
+          Get-ChildItem -Path ./miniforge3/conda-bld -Recurse -Include *.tar.bz2,*.conda -ErrorAction SilentlyContinue | ForEach-Object {
+            Copy-Item $_.FullName -Destination ./built_packages/ -ErrorAction SilentlyContinue
+          }
+          Get-ChildItem ./built_packages/ -ErrorAction SilentlyContinue
+      
+      - name: Upload conda packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: conda-packages-${{ matrix.config }}
+          path: ./built_packages/*
+          if-no-files-found: warn
+          retention-days: 30
+
+  summary:
+    needs: [build-linux, build-osx, build-windows]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./all_packages
+      
+      - name: Create build summary
+        run: |
+          echo "## Conda Package Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Built Packages" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          total_size=0
+          package_count=0
+          
+          if [ -d "./all_packages" ]; then
+            for dir in ./all_packages/*/; do
+              if [ -d "$dir" ]; then
+                dirname=$(basename "$dir")
+                echo "#### $dirname" >> $GITHUB_STEP_SUMMARY
+                echo "" >> $GITHUB_STEP_SUMMARY
+                echo "| Package | Size |" >> $GITHUB_STEP_SUMMARY
+                echo "|---------|------|" >> $GITHUB_STEP_SUMMARY
+                
+                for pkg in "$dir"*; do
+                  if [ -f "$pkg" ]; then
+                    package_count=$((package_count + 1))
+                    filename=$(basename "$pkg")
+                    size=$(stat -f%z "$pkg" 2>/dev/null || stat -c%s "$pkg" 2>/dev/null || echo "0")
+                    total_size=$((total_size + size))
+                    size_mb=$(echo "scale=2; $size / 1024 / 1024" | bc)
+                    echo "| $filename | ${size_mb} MB |" >> $GITHUB_STEP_SUMMARY
+                  fi
+                done
+                echo "" >> $GITHUB_STEP_SUMMARY
+              fi
+            done
+            
+            total_size_mb=$(echo "scale=2; $total_size / 1024 / 1024" | bc)
+            echo "### Total" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **Total packages built:** $package_count" >> $GITHUB_STEP_SUMMARY
+            echo "- **Total size:** ${total_size_mb} MB" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No packages were built." >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Download" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All packages are available as artifacts attached to this workflow run." >> $GITHUB_STEP_SUMMARY
