@@ -51,9 +51,9 @@ jobs:
       - name: Find built packages
         id: find-packages
         run: |
-          # Find all conda packages in the build output
+          # Find only gstreamer packages (not dependencies)
           mkdir -p ./built_packages
-          find ./build_artifacts -name "*.tar.bz2" -o -name "*.conda" 2>/dev/null | while read pkg; do
+          find ./build_artifacts -name "gstreamer-*.conda" -o -name "gst-plugins-*.conda" -o -name "gst-rtsp-server-*.conda" 2>/dev/null | while read pkg; do
             cp "$pkg" ./built_packages/ || true
           done
           ls -lh ./built_packages/ || echo "No packages found"
@@ -102,9 +102,9 @@ jobs:
       - name: Find built packages
         id: find-packages
         run: |
-          # Find all conda packages in the build output
+          # Find only gstreamer packages (not dependencies)
           mkdir -p ./built_packages
-          find ./build_artifacts -name "*.tar.bz2" -o -name "*.conda" 2>/dev/null | while read pkg; do
+          find ./build_artifacts -name "gstreamer-*.conda" -o -name "gst-plugins-*.conda" -o -name "gst-rtsp-server-*.conda" 2>/dev/null | while read pkg; do
             cp "$pkg" ./built_packages/ || true
           done
           ls -lh ./built_packages/ || echo "No packages found"
@@ -147,9 +147,9 @@ jobs:
         shell: pwsh
         id: find-packages
         run: |
-          # Find all conda packages in the build output
+          # Find only gstreamer packages (not dependencies)
           New-Item -ItemType Directory -Force -Path ./built_packages
-          Get-ChildItem -Path ./build_artifacts -Recurse -Include *.tar.bz2,*.conda -ErrorAction SilentlyContinue | ForEach-Object {
+          Get-ChildItem -Path ./build_artifacts -Recurse -Include gstreamer-*.conda,gst-plugins-*.conda,gst-rtsp-server-*.conda -ErrorAction SilentlyContinue | ForEach-Object {
             Copy-Item $_.FullName -Destination ./built_packages/ -ErrorAction SilentlyContinue
           }
           Get-ChildItem ./built_packages/ -ErrorAction SilentlyContinue

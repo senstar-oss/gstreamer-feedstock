@@ -16,6 +16,9 @@ source:
     folder: plugins_good
     patches:
       - jpeg-win.patch  # [win]
+  - url: https://gstreamer.freedesktop.org/src/gst-plugins-bad/gst-plugins-bad-{{ version }}.tar.xz
+    sha256: 95c48dacaf14276f4e595f4cbca94b3cfebfc22285e765e2aa56d0a7275d7561
+    folder: plugins_bad
   - url: https://gstreamer.freedesktop.org/src/gst-plugins-ugly/gst-plugins-ugly-{{ version }}.tar.xz
     sha256: 417f5ee895f734ac0341b3719c175fff16b4c8eae8806e29e170b3bcb3d9dba5
     folder: plugins_ugly
@@ -254,6 +257,55 @@ outputs:
         dressed up in tests.  If you're looking for a role model to
         base your own plug-in on here it is.
       doc_source_url: https://github.com/GStreamer/gst-plugins-good/tree/master/docs
+      license: LGPL-2.0-or-later
+      license_file: COPYING
+
+  - name: gst-plugins-bad
+    script: install_bad_plugins.sh  # [unix]
+    script: install_bad_plugins.bat  # [win]
+    build:
+      activate_in_script: true
+      ignore_run_exports:
+        - python      # [build_platform != target_platform]
+        - python_abi  # [build_platform != target_platform]
+      run_exports:
+        - {{ pin_subpackage('gst-plugins-bad', max_pin='x.x') }}
+    requirements:
+      build:
+        - {{ compiler('c') }}
+        - {{ stdlib('c') }}
+        - {{ compiler('cxx') }}
+        - cross-python_{{ target_platform }} 3.10    # [build_platform != target_platform]
+        - pkg-config
+        - meson
+        - ninja
+        - gettext-tools
+        - gobject-introspection
+      host:
+        - python 3.10  # [build_platform != target_platform]
+        - {{ pin_subpackage('gstreamer', exact=True) }}
+        - {{ pin_subpackage('gst-plugins-base', exact=True) }}
+        - glib
+        - zlib
+        - libintl-devel  # [not linux]
+        - openssl
+      run:
+        - {{ pin_subpackage('gstreamer', exact=True) }}
+        - {{ pin_subpackage('gst-plugins-base', exact=True) }}
+
+    test:
+      commands:
+        - gst-inspect-1.0 --plugin dtls
+        - gst-inspect-1.0 --plugin srtp
+
+    about:
+      summary: GStreamer Bad Plug-ins
+      description: |
+        GStreamer Bad Plug-ins is a collection of plug-ins that aren't
+        up to par compared to the rest. They might be close to being good quality,
+        but they're missing something - be it a good code review, some documentation,
+        a set of tests, a real live maintainer, or some actual wide use.
+      doc_source_url: https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad
       license: LGPL-2.0-or-later
       license_file: COPYING
 
