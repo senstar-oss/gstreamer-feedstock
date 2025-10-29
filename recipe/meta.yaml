@@ -1,4 +1,4 @@
-{% set version = "1.26.3" %}
+{% set version = "1.26.7" %}
 {% set posix = 'm2-' if win else '' %}
 
 package:
@@ -7,23 +7,23 @@ package:
 
 source:
   - url: https://gstreamer.freedesktop.org/src/gstreamer/gstreamer-{{ version }}.tar.xz
-    sha256: dc661603221293dccc740862425eb54fbbed60fb29d08c801d440a6a3ff82680
+    sha256: 18a5e214114dc501407697dd458514bba62cadd5414c60f793cf70141a4d0bb3
   - url: https://gstreamer.freedesktop.org/src/gst-plugins-base/gst-plugins-base-{{ version }}.tar.xz
-    sha256: 4ef9f9ef09025308ce220e2dd22a89e4c992d8ca71b968e3c70af0634ec27933
+    sha256: 969e3cbf05dfab92cf37e94840fbe398517d7ba3275331d1c216a2e30a7208d0
     folder: plugins_base
   - url: https://gstreamer.freedesktop.org/src/gst-plugins-good/gst-plugins-good-{{ version }}.tar.xz
-    sha256: fe4ec9670edfe6bb1e5f27169ae145b5ac2dd218ac98bd8251c8fba41ad33c53
+    sha256: 82af18a1f3e4a060db61d2630fbb975269b80b55bb2fdcfddfab5c6440d30781
     folder: plugins_good
     patches:
       - jpeg-win.patch  # [win]
   - url: https://gstreamer.freedesktop.org/src/gst-plugins-bad/gst-plugins-bad-{{ version }}.tar.xz
-    sha256: 95c48dacaf14276f4e595f4cbca94b3cfebfc22285e765e2aa56d0a7275d7561
+    sha256: a0ab17dddd4c029ecd7a423c30badd5a3c7599ea42707016d1d57545f5723ccf
     folder: plugins_bad
   - url: https://gstreamer.freedesktop.org/src/gst-plugins-ugly/gst-plugins-ugly-{{ version }}.tar.xz
-    sha256: 417f5ee895f734ac0341b3719c175fff16b4c8eae8806e29e170b3bcb3d9dba5
+    sha256: 11f2e4f34bb2e841dc60edc95581572bc47be0c11e577d12bed98bb1f80a661b
     folder: plugins_ugly
   - url: https://gstreamer.freedesktop.org/src/gst-rtsp-server/gst-rtsp-server-{{ version }}.tar.xz
-    sha256: 415e8a53a9844789770dd4f116ac2e3a4a33de42673c57acc25c5ba0f4406fc5
+    sha256: 4f234594aea692e3c1bfaa969965039aaf7483bdfc5862b31d614a59e6718abf
     folder: rtsp_server
 
 build:
