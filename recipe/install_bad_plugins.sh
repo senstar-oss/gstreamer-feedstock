@@ -23,10 +23,14 @@ fi
 
 export PKG_CONFIG=$(which pkg-config)
 
+# Debug: Check if libsrtp2 pkg-config exists
+pkg-config --list-all | grep -i srtp || echo "No SRTP pkg-config found"
+pkg-config --modversion libsrtp2 || echo "libsrtp2.pc not found"
+
 meson_options=(
       -Dexamples=disabled
       -Dtests=disabled
-      -Dsrtp=enabled
+      -Dsrtp=auto
       -Dopenh264=enabled
 )
 
