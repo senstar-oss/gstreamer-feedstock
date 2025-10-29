@@ -293,7 +293,7 @@ outputs:
         - zlib
         - libintl-devel  # [not linux]
         - openssl
-        - libsrtp
+        - libsrtp2
       run:
         - {{ pin_subpackage('gstreamer', exact=True) }}
         - {{ pin_subpackage('gst-plugins-base', exact=True) }}
