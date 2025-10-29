@@ -15,20 +15,6 @@ on:
           - osx_arm64
           - win_64
           - all
-      build_only:
-        description: 'Build only specific package (leave empty for all)'
-        required: false
-        type: choice
-        options:
-          - all_packages
-          - gstreamer
-          - gst-plugins-base
-          - gst-plugins-good
-          - gst-plugins-bad
-          - gst-plugins-ugly-lgpl
-          - gst-plugins-ugly-gpl
-          - gst-rtsp-server
-        default: all_packages
 
 jobs:
   build-linux:
@@ -60,9 +46,6 @@ jobs:
           export UPLOAD_PACKAGES=False
           export IS_PR_BUILD=True
           export SKIP_OUTPUT_VALIDATION=1
-          if [ "${{ inputs.build_only }}" != "all_packages" ]; then
-            export BUILD_ONLY=${{ inputs.build_only }}
-          fi
           bash .scripts/run_docker_build.sh
       
       - name: Find built packages
@@ -114,9 +97,6 @@ jobs:
           export UPLOAD_PACKAGES=False
           export IS_PR_BUILD=True
           export SKIP_OUTPUT_VALIDATION=1
-          if [ "${{ inputs.build_only }}" != "all_packages" ]; then
-            export BUILD_ONLY=${{ inputs.build_only }}
-          fi
           bash .scripts/run_osx_build.sh
       
       - name: Find built packages
@@ -161,7 +141,6 @@ jobs:
           set UPLOAD_PACKAGES=False
           set IS_PR_BUILD=True
           set SKIP_OUTPUT_VALIDATION=1
-          if not "${{ inputs.build_only }}"=="all_packages" set BUILD_ONLY=${{ inputs.build_only }}
           call .scripts\run_win_build.bat
       
       - name: Find built packages
