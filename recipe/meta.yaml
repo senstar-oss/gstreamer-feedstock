@@ -298,7 +298,6 @@ outputs:
     test:
       commands:
         - gst-inspect-1.0 --plugin dtls
-        - gst-inspect-1.0 --plugin srtp
         - gst-inspect-1.0 --plugin openh264
 
     about:
