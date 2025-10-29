@@ -34,6 +34,7 @@ outputs:
     script: install_gstreamer.sh  # [unix]
     script: install_gstreamer.bat  # [win]
     build:
+      skip: true  # [environ.get('BUILD_ONLY') and environ.get('BUILD_ONLY') != 'gstreamer']
       activate_in_script: true
       ignore_run_exports:
         # we need cross-python to build, but this isn't a python package
@@ -86,6 +87,7 @@ outputs:
     script: install_base_plugins.sh  # [unix]
     script: install_base_plugins.bat  # [win]
     build:
+      skip: true  # [environ.get('BUILD_ONLY') and environ.get('BUILD_ONLY') != 'gst-plugins-base']
       activate_in_script: true
       ignore_run_exports:
         # we need cross-python to build, but this isn't a python package
@@ -172,6 +174,7 @@ outputs:
     script: install_good_plugins.sh  # [unix]
     script: install_good_plugins.bat  # [win]
     build:
+      skip: true  # [environ.get('BUILD_ONLY') and environ.get('BUILD_ONLY') != 'gst-plugins-good']
       activate_in_script: true
       ignore_run_exports:
         # we need cross-python to build, but this isn't a python package
@@ -264,6 +267,7 @@ outputs:
     script: install_bad_plugins.sh  # [unix]
     script: install_bad_plugins.bat  # [win]
     build:
+      skip: true  # [environ.get('BUILD_ONLY') and environ.get('BUILD_ONLY') != 'gst-plugins-bad']
       activate_in_script: true
       ignore_run_exports:
         - python      # [build_platform != target_platform]
@@ -289,6 +293,7 @@ outputs:
         - zlib
         - libintl-devel  # [not linux]
         - openssl
+        - libsrtp
       run:
         - {{ pin_subpackage('gstreamer', exact=True) }}
         - {{ pin_subpackage('gst-plugins-base', exact=True) }}
@@ -312,8 +317,8 @@ outputs:
   - name: gst-rtsp-server
     script: install_rtsp_server.sh  # [unix]
     build:
+      skip: true  # [not linux or (environ.get('BUILD_ONLY') and environ.get('BUILD_ONLY') != 'gst-rtsp-server')]
       activate_in_script: true
-      skip: true  # [not linux]
       ignore_run_exports:
         - python      # [build_platform != target_platform]
         - python_abi  # [build_platform != target_platform]
@@ -356,8 +361,8 @@ outputs:
   - name: gst-plugins-ugly-lgpl
     script: install_ugly_plugins_lgpl.sh  # [linux]
     build:
+      skip: true  # [not linux or (environ.get('BUILD_ONLY') and environ.get('BUILD_ONLY') != 'gst-plugins-ugly-lgpl')]
       activate_in_script: true
-      skip: true  # [not linux]
       ignore_run_exports:
         - python      # [build_platform != target_platform]
         - python_abi  # [build_platform != target_platform]
@@ -404,8 +409,8 @@ outputs:
   - name: gst-plugins-ugly-gpl
     script: install_ugly_plugins_gpl.sh  # [linux]
     build:
+      skip: true  # [not linux or (environ.get('BUILD_ONLY') and environ.get('BUILD_ONLY') != 'gst-plugins-ugly-gpl')]
       activate_in_script: true
-      skip: true  # [not linux]
       ignore_run_exports:
         - python      # [build_platform != target_platform]
         - python_abi  # [build_platform != target_platform]
