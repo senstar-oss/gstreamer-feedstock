@@ -114,6 +114,9 @@ jobs:
           export UPLOAD_PACKAGES=False
           export IS_PR_BUILD=True
           export SKIP_OUTPUT_VALIDATION=1
+          if [ "${{ inputs.build_only }}" != "all_packages" ]; then
+            export BUILD_ONLY=${{ inputs.build_only }}
+          fi
           bash .scripts/run_osx_build.sh
       
       - name: Find built packages
@@ -158,6 +161,7 @@ jobs:
           set UPLOAD_PACKAGES=False
           set IS_PR_BUILD=True
           set SKIP_OUTPUT_VALIDATION=1
+          if not "${{ inputs.build_only }}"=="all_packages" set BUILD_ONLY=${{ inputs.build_only }}
           call .scripts\run_win_build.bat
       
       - name: Find built packages
