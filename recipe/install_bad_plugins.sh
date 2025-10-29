@@ -26,6 +26,8 @@ export PKG_CONFIG=$(which pkg-config)
 meson_options=(
       -Dexamples=disabled
       -Dtests=disabled
+      -Dsrtp=enabled
+      -Dopenh264=enabled
 )
 
 

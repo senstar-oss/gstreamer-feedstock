@@ -290,6 +290,7 @@ outputs:
         - libintl-devel  # [not linux]
         - openssl
         - libsrtp2
+        - openh264
       run:
         - {{ pin_subpackage('gstreamer', exact=True) }}
         - {{ pin_subpackage('gst-plugins-base', exact=True) }}
@@ -298,6 +299,7 @@ outputs:
       commands:
         - gst-inspect-1.0 --plugin dtls
         - gst-inspect-1.0 --plugin srtp
+        - gst-inspect-1.0 --plugin openh264
 
     about:
       summary: GStreamer Bad Plug-ins

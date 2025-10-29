@@ -16,6 +16,8 @@ meson setup builddir ^
     --backend=ninja ^
     -Dexamples=disabled ^
     -Dtests=disabled ^
+    -Dsrtp=enabled ^
+    -Dopenh264=enabled ^
     -Dc_link_args=intl.dll.lib
 if errorlevel 1 exit 1
 
